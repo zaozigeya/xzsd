@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.neusoft.webauth.menu.dao.MenuDao">
+    <resultMap id="BaseResultMap" type="com.neusoft.webauth.menu.entity.Menu" >
+        <id column="menu_code" property="menuCode" jdbcType="VARCHAR" />
+        <result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+        <result column="menu_path" property="menuUrl" jdbcType="VARCHAR" />
+        <result column="is_deleted" property="isDeleted" jdbcType="INTEGER" />
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+        <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+        <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+        <result column="last_modified_by" property="lastModifiedBy" jdbcType="VARCHAR" />
+        <result column="version" property="version" jdbcType="INTEGER" />
+    </resultMap>
+    <!--查询全部菜单-->
+    <select id="listMenus" resultMap="BaseResultMap">
+        select
+            menu_code,
+            menu_name,
+            menu_path,
+            menu_note,
+        	version
+        from t_sys_menu
+        where is_deleted = 0
+        order by gmt_create
+    </select>
+    <!--获取用户菜单(角色)-->
+    <select id="listMenusByMan" resultMap="BaseResultMap">
+        select
+        menu_name,
+        menu_code,
+        menu_path,
+        menu_note
+        from t_sys_menu
+        where
+        is_deleted = 0
+        and
+        menu_name in("客户管理","订单管理","门店管理","司机信息管理")
+        order by gmt_create
+    </select>
+    <!--删除菜单-->
+    <update id="deleteMenu"  parameterType="java.lang.String">
+        update t_sys_menu
+           set is_deleted     = 1,
+               version      = version + 1,
+               gmt_modified = now(),
+               last_modified_by   = #{userId,jdbcType=VARCHAR}
+         where  menu_code = #{menuCode}
+    </update>
+    <!--新增菜单-->
+    <insert id="saveMenu" parameterType="com.neusoft.webauth.menu.entity.Menu">
+        insert into t_sys_menu
+           (
+            menu_code,
+            menu_name,
+            menu_path,
+            menu_note,
+            is_deleted,
+            gmt_create,
+            create_by,
+            version
+          ) values (
+            #{menuCode,jdbcType=VARCHAR},
+            #{menuName,jdbcType=VARCHAR},
+            #{menuUrl,jdbcType=VARCHAR},
+            #{menuNote,jdbcType=VARCHAR},
+            #{isDeleted,jdbcType=VARCHAR},
+            now(),
+            #{createBy,jdbcType=VARCHAR},
+            0)
+    </insert>
+    <!--修改菜单信息-->
+    <update id="updateMenu" parameterType="com.neusoft.webauth.menu.entity.Menu">
+        update t_sys_menu
+           set menu_name    = #{menuName,jdbcType=VARCHAR},
+               menu_path    = #{menuUrl,jdbcType=VARCHAR},
+               menu_note    = #{menuNote,jdbcType=VARCHAR},
+               sort_no      = #{sortNo,jdbcType=NUMERIC},
+               version      = version + 1,
+               gmt_modified = now(),
+               last_modified_by   = #{lastModifiedBy,jdbcType=VARCHAR}
+         where menu_code = #{menuCode}
+    </update>
+    <!--查询菜单详情-->
+    <select id="findMenuById" parameterType="java.lang.String" resultType="com.neusoft.webauth.menu.entity.Menu">
+        select
+        menu_name menuName,
+        menu_path menuUrl,
+        menu_note menuNote,
+        menu_code menuCode,
+        version
+        from t_sys_menu
+        where menu_code= #{menuCode}
+        and is_deleted  = 0
+    </select>
+</mapper>
